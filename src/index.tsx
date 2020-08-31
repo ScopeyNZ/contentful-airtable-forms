@@ -3,13 +3,20 @@ import ReactDOM from 'react-dom';
 import './index.scss';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import {FieldExtensionSDK, init} from 'contentful-ui-extensions-sdk';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+init<FieldExtensionSDK>(sdk => {
+  sdk.window.startAutoResizer();
+
+  ReactDOM.render(
+    <React.StrictMode>
+      <App contentfulSdk={sdk} />
+    </React.StrictMode>,
+    document.getElementById('root')
+  );
+})
+
+
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

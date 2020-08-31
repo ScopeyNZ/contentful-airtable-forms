@@ -3,28 +3,16 @@ import FieldDefinition from '../types/FieldDefinition';
 import FieldDefinitionSummary from '../components/FieldDefinitionSummary';
 import {DragDropContext, DragUpdate, Droppable} from 'react-beautiful-dnd';
 
-let counter = 0;
-const getId = (): string => `id-${counter++}`;
 
-export default function SetFieldsStep({ knownFields, tableName, workspaceId, initialDefinitions }: {
+export default function SetFieldsStep({ knownFields, tableName, workspaceId, value, onChange, onCreateNewField }: {
   knownFields: Array<string>,
   tableName: string,
   workspaceId: string,
-  initialDefinitions: Array<FieldDefinition>,
+  value: Array<FieldDefinition>,
+  onChange: (newDefinitions: Array<FieldDefinition>) => void,
+  onCreateNewField: () => void,
 }) {
-  const makeNewField = (): FieldDefinition => ({
-    id: getId(),
-    label: '',
-    airtableField: undefined,
-    type: 'text',
-  });
 
-  const [fieldDefinitions, setFieldDefinitions] = useState<Array<FieldDefinition>>(initialDefinitions.length
-    ? initialDefinitions.map(definition => {
-      definition.id = getId();
-      return definition;
-    })
-    : [makeNewField()])
   const [possibleFields, setPossibleFields] = useState(knownFields)
 
   const handleAddPossibleField = (field: string) => setPossibleFields([
@@ -33,22 +21,15 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, ini
   ]);
 
   const handleChangeFieldDefinition = (index: number) => (definition: FieldDefinition) => {
-    const temp = [...fieldDefinitions];
+    const temp = [...value];
     temp.splice(index, 1, definition);
-    setFieldDefinitions(temp);
+    onChange(temp);
   }
 
   const handleRemoveFieldDefinition = (index: number) => () => {
-    const temp = [...fieldDefinitions];
+    const temp = [...value];
     temp.splice(index, 1);
-    setFieldDefinitions(temp);
-  }
-
-  const handleAddDefinition = () => {
-    setFieldDefinitions([
-      ...fieldDefinitions,
-      makeNewField(),
-    ])
+    onChange(temp);
   }
 
   const endDrag = (result: DragUpdate) => {
@@ -56,11 +37,11 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, ini
       return;
     }
 
-    const temp = [...fieldDefinitions];
+    const temp = [...value];
     const [removed] = temp.splice(result.source.index, 1);
     temp.splice(result.destination.index, 0, removed);
 
-    setFieldDefinitions(temp);
+    onChange(temp);
   };
 
   return (
@@ -73,7 +54,7 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, ini
               ref={provided.innerRef}
               className="space-y-2 cursor-grab"
             >
-              { fieldDefinitions.map((definition, index) => (
+              { value.map((definition, index) => (
                 <FieldDefinitionSummary
                   key={definition.id}
                   index={index}
@@ -85,7 +66,7 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, ini
                   tableName={tableName}
                   workspaceId={workspaceId}
                   startInEdit={
-                    index === fieldDefinitions.length - 1 && (!definition.airtableField || !definition.label.length)
+                    index === value.length - 1 && (!definition.airtableField || !definition.label.length)
                   }
                 />
               )) }
@@ -97,7 +78,7 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, ini
       <button
         type="button"
         className="cf-btn-secondary mt-4"
-        onClick={handleAddDefinition}
+        onClick={onCreateNewField}
       >+ Add new field</button>
     </>
   )
