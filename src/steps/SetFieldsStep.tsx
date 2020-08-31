@@ -95,7 +95,7 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, ini
       </DragDropContext>
 
       <button
-        role="button"
+        type="button"
         className="cf-btn-secondary mt-4"
         onClick={handleAddDefinition}
       >+ Add new field</button>

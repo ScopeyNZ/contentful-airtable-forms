@@ -44,7 +44,7 @@ export default function FieldDefinitionSummary({
         <p className="text-lg font-bold">{ fieldDefinition.label }</p>
       </div>
       <button
-        role="button"
+        type="button"
         className="cf-btn-secondary"
         onClick={() => setIsEditing(true)}
       >

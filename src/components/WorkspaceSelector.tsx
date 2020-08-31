@@ -1,4 +1,4 @@
-import React, {ChangeEvent} from 'react';
+import React from 'react';
 import { set, get } from 'local-storage';
 import {useState} from "react";
 import classNames from "classnames";

@@ -1,5 +1,5 @@
-import React, {ChangeEvent, SyntheticEvent, useState} from 'react';
-import FieldDefinition, {FieldDefinitionType} from '../types/FieldDefinition';
+import React from 'react';
+import FieldDefinition from '../types/FieldDefinition';
 import FieldSelector from './FieldSelector';
 import ContentfulFieldHint from './ContentfulFieldHint';
 

@@ -74,13 +74,13 @@ export default function FieldSelector({
           <button
             className={classNames('cf-btn-primary', { 'cf-is-loading': validatingManualField })}
             disabled={validatingManualField}
-            role="button"
+            type="button"
             onClick={handleAddField}
           >
             Validate & use
           </button>
         </>) }
-        <button className="cf-btn-secondary" role="button" onClick={() => setEnteringManualField(!enteringManualField)}>
+        <button className="cf-btn-secondary" type="button" onClick={() => setEnteringManualField(!enteringManualField)}>
           { enteringManualField ? 'Cancel' : 'Enter field manually' }
         </button>
       </div>
