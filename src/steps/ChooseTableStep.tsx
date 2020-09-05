@@ -1,5 +1,4 @@
 import React, {useState} from "react";
-import {resolveFields} from "../lib/airtable";
 import WorkspaceSelector from "../components/WorkspaceSelector";
 import ContentfulFieldHint from "../components/ContentfulFieldHint";
 import classNames from "classnames";
@@ -8,18 +7,17 @@ export default function ChooseTableStep({
   onResolveFields,
   onSetWorkspaceId,
   onSetTableName,
-  tableName,
   workspaceId,
 }: {
   onResolveFields: (fields: Array<string>) => void,
   onSetWorkspaceId: (workspaceId: string) => void,
   onSetTableName: (tableName: string) => void ,
-  tableName: string,
   workspaceId: string,
 }) {
   const [invalidWorkspace, setInvalidWorkspace] = useState<boolean>(false);
   const [invalidTable, setInvalidTable] = useState<boolean>(false);
   const [validating, setValidating] = useState<boolean>(false);
+  const [candidateTable, setCandidateTable] = useState<string>('');
 
   const handleValidateTable = async () => {
     setInvalidWorkspace(false);
@@ -29,24 +27,28 @@ export default function ChooseTableStep({
       setInvalidWorkspace(true);
       return;
     }
-    if (tableName.length === 0) {
+    if (candidateTable.length === 0) {
       setInvalidTable(true);
       return;
     }
 
     setValidating(true);
 
-    try {
-      const resolved = await resolveFields(workspaceId, tableName)
-      setValidating(false);
-      onResolveFields(resolved);
-    } catch (error) {
+    const response = await fetch(
+      `/.netlify/functions/airtable/fields?workspaceId=${workspaceId}&table=${encodeURIComponent(candidateTable)}`
+    );
+
+    if (response.status !== 200) {
       setInvalidTable(true);
+      return;
     }
+    setValidating(false);
+    onSetTableName(candidateTable);
+    onResolveFields(await response.json());
   }
 
   const hint = invalidTable
-    ? (tableName.length > 0 ? 'The given table appears to be invalid' : 'You must enter a table name')
+    ? (candidateTable.length > 0 ? 'The given table appears to be invalid' : 'You must enter a table name')
     : 'Enter the name of the table where form submissions should go. This must match the name in Airtable exactly.';
 
   return (
@@ -66,8 +68,8 @@ export default function ChooseTableStep({
           type="text"
           id="cfaf-table-name"
           className="cf-form-input"
-          value={tableName}
-          onChange={event => onSetTableName(event.target.value)}
+          value={candidateTable}
+          onChange={event => setCandidateTable(event.target.value)}
           aria-invalid={invalidTable}
         />
         <ContentfulFieldHint errored={invalidTable} text={hint} />

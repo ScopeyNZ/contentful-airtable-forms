@@ -1,20 +1,23 @@
+const fetch = require('node-fetch').default
+
 export const resolveFields = async (workspace: string, table: string): Promise<Array<string>> => {
+  console.log(process.env.AIRTABLE_KEY);
   return fetch(
     `https://api.airtable.com/v0/${workspace}/${encodeURIComponent(table)}?maxRecords=20`,
     { headers: {
-      'Authorization': `Bearer ${process.env.REACT_APP_AIRTABLE_KEY}`,
+      'Authorization': `Bearer ${process.env.AIRTABLE_KEY}`,
     }},
   )
-    .then(response => {
+    .then((response: any) => {
       if (response.status !== 200) {
-        return response.json().then(response => {
+        return response.json().then((response: any) => {
           throw response
         });
       }
 
       return response.json()
     })
-    .then(json => json.records.reduce((acc: Array<string>, record: { fields: Object }): Array<string> => (
+    .then((json: any) => json.records.reduce((acc: Array<string>, record: { fields: Object }): Array<string> => (
       Object.keys(record.fields).reduce((currentFields: Array<string>, candidateField: string): Array<string> => {
         if (currentFields.includes(candidateField)) {
           return currentFields;
@@ -37,7 +40,7 @@ export const validateField = async (
     {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.REACT_APP_AIRTABLE_KEY}`,
+        'Authorization': `Bearer ${process.env.AIRTABLE_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -50,15 +53,15 @@ export const validateField = async (
         ]
       })
     },
-  ).then(response => {
+  ).then((response: any) => {
     if (response.status === 200) {
       // Dispatch a request to delete the record we just added, but don't wait for it.
-      response.json().then((records) => fetch(
+      response.json().then((records: Array<any>) => fetch(
         `https://api.airtable.com/v0/${workspace}/${encodeURIComponent(table)}?records=${records[0].id}`,
         {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${process.env.REACT_APP_AIRTABLE_KEY}`,
+            'Authorization': `Bearer ${process.env.AIRTABLE_KEY}`,
           },
         },
       ));
@@ -66,7 +69,7 @@ export const validateField = async (
       return true;
     }
 
-    return response.json().then(({ error }) => {
+    return response.json().then(({ error }: { error: any }) => {
       throw error.type;
     });
   })

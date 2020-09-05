@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import ContentfulFieldHint from './ContentfulFieldHint';
 import classNames from 'classnames';
-import {validateField} from '../lib/airtable';
 
 export default function FieldSelector({
   id,
@@ -27,18 +26,29 @@ export default function FieldSelector({
 
   const handleAddField = async () => {
     setInvalid(false);
-    try {
-      setValidatingManualField(true);
-      await validateField(workspaceId, tableName, newField);
+    setValidatingManualField(true);
+
+    const params = `workspaceId=${
+      workspaceId
+    }&table=${
+      encodeURIComponent(tableName)
+    }&candidateField=${
+      encodeURIComponent(newField)
+    }`;
+
+    const response = await fetch(`/.netlify/functions/airtable/validate-field?${params}`)
+
+    if (response.status === 200) {
       setValidatingManualField(false);
       setEnteringManualField(false);
       setNewField('');
       onAddPossibleField(newField);
       onChange(newField);
-    } catch (error) {
-      setInvalid(true);
-      setValidatingManualField(true)
+      return;
     }
+
+    setInvalid(true);
+    setValidatingManualField(true);
   }
 
   let hint = 'Choose (or enter) the column name that this field should write into';

@@ -6,7 +6,7 @@ import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk';
 import FieldDefinition from './types/FieldDefinition';
 import './App.scss';
 
-interface ContenfulFieldValue {
+interface ContentfulFieldValue {
   workspace: string | undefined,
   table: string | undefined,
   knownFields: Array<string> | undefined,
@@ -17,25 +17,25 @@ let counter = 0;
 const getId = (): string => `id-${counter++}`;
 
 function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
-  const initial: ContenfulFieldValue = contentfulSdk.field.getValue();
+  const initial: ContentfulFieldValue = contentfulSdk.field.getValue();
 
   const makeNewField = (): FieldDefinition => ({
     id: getId(),
     label: '',
     airtableField: undefined,
-    type: 'text', 
+    type: 'text',
   });
 
-  const initialDefinitions = initial.fieldDefinitions && initial.fieldDefinitions.length
+  const initialDefinitions = initial?.fieldDefinitions && initial.fieldDefinitions.length
     ? initial.fieldDefinitions.map(definition => {
       definition.id = getId();
       return definition;
     })
     : [makeNewField()];
 
-  const [workspaceId, setWorkspaceId] = useState<string>(initial.workspace || '');
-  const [tableName, setTableName] = useState<string>(initial.table || '');
-  const [potentialFields, setPotentialFields] = useState<Array<string>>(initial.knownFields || []);
+  const [workspaceId, setWorkspaceId] = useState<string>(initial?.workspace || '');
+  const [tableName, setTableName] = useState<string>(initial?.table || '');
+  const [potentialFields, setPotentialFields] = useState<Array<string>>(initial?.knownFields || []);
   const [fieldDefinitions, setFieldDefinitions] = useState(initialDefinitions);
 
   const handleCreateNewField = () => {
@@ -64,14 +64,13 @@ function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
 
   return (
     <div className="max-w-2xl">
-      {Array.isArray(potentialFields) || (<ChooseTableStep
+      {(workspaceId && tableName) || (<ChooseTableStep
         onResolveFields={change(setPotentialFields, 'knownFields')}
         onSetWorkspaceId={change(setWorkspaceId, 'workspace')}
         onSetTableName={change(setTableName, 'table')}
-        tableName={tableName}
         workspaceId={workspaceId}
       />)}
-      {Array.isArray(potentialFields) && (<>
+      {workspaceId && tableName && (<>
         <SetFieldsStep
           value={fieldDefinitions}
           onChange={change(setFieldDefinitions, 'fieldDefinitions')}

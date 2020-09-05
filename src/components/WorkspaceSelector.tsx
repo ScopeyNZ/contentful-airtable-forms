@@ -2,7 +2,6 @@ import React from 'react';
 import { set, get } from 'local-storage';
 import {useState} from "react";
 import classNames from "classnames";
-import {resolveFields} from "../lib/airtable";
 import ContentfulFieldHint from "./ContentfulFieldHint";
 
 interface knownSpace {
@@ -30,35 +29,35 @@ export default function WorkspaceSelector(
   const handleAddSpace = async () => {
     setIsValidatingSpace(true);
 
-    try {
-      await resolveFields(newSpace, 'not_a_real_table');
-    } catch (error) {
-      if (error.error === 'NOT_FOUND') {
-        setInvalidSpace(true);
-        return;
-      }
+    const response = await fetch(`/.netlify/functions/airtable/fields?workspaceId=${newSpace}&table=not_real_table`)
+      .then(response => response.json())
 
-      const allSpaces = [
-        ...knownSpaces,
-        {
-          value: newSpace,
-          label: newSpaceName
-        }
-      ];
+    setIsValidatingSpace(false);
 
-      set('spaces', allSpaces);
-
-      // Emit event
-      onChange(newSpace)
-
-      // Reset state
-      setSpaceOptions(allSpaces);
-      setNewSpace('');
-      setNewSpaceName('')
-      setShowAddForm(false);
-      setIsValidatingSpace(false);
-      setInvalidSpace(false);
+    if (response === 'Invalid workspace ID') {
+      setInvalidSpace(true);
+      return;
     }
+
+    const allSpaces = [
+      ...knownSpaces,
+      {
+        value: newSpace,
+        label: newSpaceName
+      }
+    ];
+
+    set('spaces', allSpaces);
+
+    // Emit event
+    onChange(newSpace)
+
+    // Reset state
+    setSpaceOptions(allSpaces);
+    setNewSpace('');
+    setNewSpaceName('')
+    setShowAddForm(false);
+    setInvalidSpace(false);
   }
 
   const handleToggleAdd = () => setShowAddForm(!showAddForm);
