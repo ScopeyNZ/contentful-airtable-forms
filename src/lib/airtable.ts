@@ -1,3 +1,4 @@
+require('encoding');
 const fetch = require('node-fetch').default
 
 export const resolveFields = async (workspace: string, table: string): Promise<Array<string>> => {
