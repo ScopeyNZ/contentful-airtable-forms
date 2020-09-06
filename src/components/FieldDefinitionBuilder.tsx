@@ -52,7 +52,7 @@ export default function FieldDefinitionBuilder({
           <select
             className="cf-form-input w-full"
             id={makeId('type')}
-            value={fieldDefinition.label}
+            value={fieldDefinition.type}
             onChange={event => updateDefinition('type')(event.target.value)}
           >
             {fieldTypes.map(({label, value}) => <option key={value} value={value}>{label}</option>)}

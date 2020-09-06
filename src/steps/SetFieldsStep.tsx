@@ -52,7 +52,7 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, val
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className="space-y-2 cursor-grab"
+              className="cursor-grab"
             >
               { value.map((definition, index) => (
                 <FieldDefinitionSummary
@@ -70,6 +70,7 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, val
                   }
                 />
               )) }
+              { provided.placeholder }
             </div>
           ) }
         </Droppable>

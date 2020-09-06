@@ -2,16 +2,21 @@ import React, {useState} from "react";
 import WorkspaceSelector from "../components/WorkspaceSelector";
 import ContentfulFieldHint from "../components/ContentfulFieldHint";
 import classNames from "classnames";
+import KnownWorkspace from '../types/KnownWorkspace';
 
 export default function ChooseTableStep({
   onResolveFields,
   onSetWorkspaceId,
   onSetTableName,
   workspaceId,
+  knownWorkspaces,
+  onAddKnownWorkspace,
 }: {
   onResolveFields: (fields: Array<string>) => void,
   onSetWorkspaceId: (workspaceId: string) => void,
   onSetTableName: (tableName: string) => void ,
+  knownWorkspaces: Array<KnownWorkspace>,
+  onAddKnownWorkspace: (newSpace: KnownWorkspace) => void
   workspaceId: string,
 }) {
   const [invalidWorkspace, setInvalidWorkspace] = useState<boolean>(false);
@@ -61,7 +66,13 @@ export default function ChooseTableStep({
           and table combination you provide is valid.
         </p>
       </div>
-      <WorkspaceSelector invalid={invalidWorkspace} value={workspaceId} onChange={onSetWorkspaceId} />
+      <WorkspaceSelector
+        invalid={invalidWorkspace}
+        value={workspaceId}
+        knownWorkspaces={knownWorkspaces}
+        onAddKnownWorkspace={onAddKnownWorkspace}
+        onChange={onSetWorkspaceId}
+      />
       <div className="cf-form-field">
         <label htmlFor="cfaf-table-name">Table name</label>
         <input

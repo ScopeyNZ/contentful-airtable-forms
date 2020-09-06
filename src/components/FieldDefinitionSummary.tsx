@@ -53,8 +53,8 @@ export default function FieldDefinitionSummary({
     </div>
   );
 
-  const renderBuilder = () => (
-    <FieldDefinitionBuilder
+  const renderBuilder = function () {
+    return <FieldDefinitionBuilder
       fieldDefinition={fieldDefinition}
       possibleFields={possibleFields}
       onAddPossibleField={onAddPossibleField}
@@ -62,8 +62,8 @@ export default function FieldDefinitionSummary({
       tableName={tableName}
       workspaceId={workspaceId}
       onClose={handleCloseBuilder}
-    />
-  );
+    />;
+  };
 
   return (
     <Draggable draggableId={fieldDefinition.id} index={index}>
@@ -72,7 +72,7 @@ export default function FieldDefinitionSummary({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className="shadow border border-cf-element transition hover:border-blue-light p-2"
+          className="shadow border border-cf-element transition hover:border-blue-light p-2 mt-2"
         >
           { isEditing ? renderBuilder() : renderSummary() }
         </div>

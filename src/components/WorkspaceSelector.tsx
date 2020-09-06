@@ -1,25 +1,18 @@
 import React from 'react';
-import { set, get } from 'local-storage';
 import {useState} from "react";
 import classNames from "classnames";
 import ContentfulFieldHint from "./ContentfulFieldHint";
-
-interface knownSpace {
-  value: string,
-  label: string,
-}
+import KnownWorkspace from '../types/KnownWorkspace';
 
 export default function WorkspaceSelector(
-  { invalid, value: chosenSpace, onChange }: {
+  { invalid, value: chosenSpace, onChange, knownWorkspaces, onAddKnownWorkspace }: {
     invalid: boolean,
     value: string|undefined,
+    knownWorkspaces: Array<KnownWorkspace>,
+    onAddKnownWorkspace: (newSpace: KnownWorkspace) => void
     onChange: (newSpace: string) => void
   }
 ) {
-  // Check local storage for previous workspaces
-  const knownSpaces = Array.isArray(get('spaces')) ? get<Array<knownSpace>>('spaces') : new Array<knownSpace>();
-
-  const [spaceOptions, setSpaceOptions] = useState<Array<knownSpace>>(knownSpaces)
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
   const [isValidatingSpace, setIsValidatingSpace] = useState<boolean>(false);
   const [invalidSpace, setInvalidSpace] = useState<boolean>(false);
@@ -39,21 +32,14 @@ export default function WorkspaceSelector(
       return;
     }
 
-    const allSpaces = [
-      ...knownSpaces,
-      {
-        value: newSpace,
-        label: newSpaceName
-      }
-    ];
-
-    set('spaces', allSpaces);
-
     // Emit event
     onChange(newSpace)
 
     // Reset state
-    setSpaceOptions(allSpaces);
+    onAddKnownWorkspace({
+      value: newSpace,
+      label: newSpaceName
+    });
     setNewSpace('');
     setNewSpaceName('')
     setShowAddForm(false);
@@ -79,7 +65,7 @@ export default function WorkspaceSelector(
     <div className="cf-form-field">
       <label htmlFor="cfaf-choose-space">Workspace ID</label>
       <div className="flex items-center space-x-2 w-full">
-        { showAddForm || spaceOptions.length === 0 || (
+        { showAddForm || knownWorkspaces.length === 0 || (
           <select
             className="cf-form-input flex-grow"
             id="cfaf-choose-space"
@@ -88,7 +74,7 @@ export default function WorkspaceSelector(
             value={chosenSpace}
           >
             <option />
-            { spaceOptions.map(({ label, value }) => (
+            { knownWorkspaces.map(({ label, value }) => (
               <option
                 key={value}
                 value={value}

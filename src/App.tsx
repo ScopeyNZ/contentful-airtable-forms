@@ -1,85 +1,142 @@
 import React, {useEffect, useState} from 'react';
-import debounce from 'lodash.debounce';
 import ChooseTableStep from "./steps/ChooseTableStep";
 import SetFieldsStep from "./steps/SetFieldsStep";
 import {FieldExtensionSDK} from 'contentful-ui-extensions-sdk';
 import FieldDefinition from './types/FieldDefinition';
 import './App.scss';
+import { get, set } from "local-storage";
+import KnownWorkspace from './types/KnownWorkspace';
+import ChosenTableSummary from './components/ChosenTableSummary';
+import { v4 } from 'uuid';
 
 interface ContentfulFieldValue {
-  workspace: string | undefined,
-  table: string | undefined,
-  knownFields: Array<string> | undefined,
-  fieldDefinitions: Array<FieldDefinition> | undefined,
+  workspace: string,
+  table: string,
+  knownFields: Array<string>,
+  fieldDefinitions: Array<FieldDefinition>,
 }
-
-let counter = 0;
-const getId = (): string => `id-${counter++}`;
 
 function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
   const initial: ContentfulFieldValue = contentfulSdk.field.getValue();
 
   const makeNewField = (): FieldDefinition => ({
-    id: getId(),
+    id: v4(),
     label: '',
     airtableField: undefined,
     type: 'text',
   });
 
+  // Check local storage for previous workspaces
+  const knownSpaces = Array.isArray(get('spaces')) ? get<Array<KnownWorkspace>>('spaces') : new Array<KnownWorkspace>();
+
   const initialDefinitions = initial?.fieldDefinitions && initial.fieldDefinitions.length
-    ? initial.fieldDefinitions.map(definition => {
-      definition.id = getId();
-      return definition;
-    })
+    ? initial.fieldDefinitions
     : [makeNewField()];
 
-  const [workspaceId, setWorkspaceId] = useState<string>(initial?.workspace || '');
-  const [tableName, setTableName] = useState<string>(initial?.table || '');
-  const [potentialFields, setPotentialFields] = useState<Array<string>>(initial?.knownFields || []);
-  const [fieldDefinitions, setFieldDefinitions] = useState(initialDefinitions);
+  const [fieldValue, setFieldValue] = useState<ContentfulFieldValue>(initial
+    ? {
+      ...initial,
+      fieldDefinitions: initialDefinitions,
+    }
+    : {
+      workspace: '',
+      table: '',
+      knownFields: [],
+      fieldDefinitions: [makeNewField()],
+    });
+
+  const [knownWorkspaces, setKnownWorkspaces] = useState<Array<KnownWorkspace>>(knownSpaces);
+  const [editingTable, setEditingTable] = useState(false);
+
+  const { workspace, table, knownFields, fieldDefinitions } = fieldValue;
+
+  const handleAddKnownWorkspace = (workspace: KnownWorkspace) => {
+    const allSpaces = [
+      ...knownWorkspaces,
+      workspace,
+    ];
+
+    set('spaces', allSpaces);
+    setKnownWorkspaces(allSpaces);
+  }
+
 
   const handleCreateNewField = () => {
-    setFieldDefinitions([
+    change('fieldDefinitions')([
       ...fieldDefinitions,
       makeNewField(),
     ])
   }
 
   useEffect(() => {
-    console.log('current contentful value', contentfulSdk.field.getValue());
+    const unsubscribe = contentfulSdk.field.onValueChanged((value) => {
+      setFieldValue(value);
+    });
+
+    // clean up the event listener when the component is removed from the DOM
+    return () => {
+      unsubscribe();
+    };
   })
 
-  const change = (stateFunction: Function, key: string) => (value: any) => {
-    stateFunction(value);
+  const change = (key: string) => (value: any) => {
+    console.log('new val', value);
 
-    debounce(() => {
-      contentfulSdk.field.setValue({
-        workspace: workspaceId,
-        table: tableName,
-        knownFields: potentialFields,
-        fieldDefintions: fieldDefinitions,
-      });
-    }, 3000);
+    contentfulSdk.field.setValue({
+      ...fieldValue,
+      [key]: value,
+    });
   }
 
+  const hasChosenTable = workspace && table;
+
+  const renderChooseTableStep = () => {
+    if (hasChosenTable && !editingTable) {
+      const selectedWorkspace = knownWorkspaces.find(candidate => candidate.value === workspace) || {
+        label: '',
+        value: workspace,
+      };
+
+      return <ChosenTableSummary
+        tableName={table}
+        workspace={selectedWorkspace}
+        onClickChange={() => { setEditingTable(true) }}
+      />;
+    }
+
+    return <ChooseTableStep
+      onResolveFields={change('knownFields')}
+      onSetWorkspaceId={change('workspace')}
+      onSetTableName={(tableName) => {
+        change('table')(tableName);
+        setEditingTable(false);
+      }}
+      onAddKnownWorkspace={handleAddKnownWorkspace}
+      knownWorkspaces={knownWorkspaces}
+      workspaceId={workspace}
+    />
+  }
+
+  const renderSetFieldsStep = () => {
+    if (!hasChosenTable) {
+      return null;
+    }
+
+    return <SetFieldsStep
+      value={fieldDefinitions}
+      onChange={change('fieldDefinitions')}
+      onCreateNewField={handleCreateNewField}
+      knownFields={knownFields}
+      workspaceId={workspace}
+      tableName={table}
+    />;
+  }
+
+
   return (
-    <div className="max-w-2xl">
-      {(workspaceId && tableName) || (<ChooseTableStep
-        onResolveFields={change(setPotentialFields, 'knownFields')}
-        onSetWorkspaceId={change(setWorkspaceId, 'workspace')}
-        onSetTableName={change(setTableName, 'table')}
-        workspaceId={workspaceId}
-      />)}
-      {workspaceId && tableName && (<>
-        <SetFieldsStep
-          value={fieldDefinitions}
-          onChange={change(setFieldDefinitions, 'fieldDefinitions')}
-          onCreateNewField={handleCreateNewField}
-          knownFields={potentialFields}
-          workspaceId={workspaceId}
-          tableName={tableName}
-        />
-      </>)}
+    <div className="max-w-3xl">
+      {renderChooseTableStep()}
+      {renderSetFieldsStep()}
 
     </div>
   );
