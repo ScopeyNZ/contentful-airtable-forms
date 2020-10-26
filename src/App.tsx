@@ -11,14 +11,13 @@ import { v4 } from 'uuid';
 
 interface ContentfulFieldValue {
   workspace: string,
+  workspaceName: string|undefined,
   table: string,
   knownFields: Array<string>,
   fieldDefinitions: Array<FieldDefinition>,
 }
 
-function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
-  const initial: ContentfulFieldValue = contentfulSdk.field.getValue();
-
+function App({ contentfulSdk, initial }: { contentfulSdk: FieldExtensionSDK, initial: ContentfulFieldValue }) {
   const makeNewField = (): FieldDefinition => ({
     id: v4(),
     label: '',
@@ -40,6 +39,7 @@ function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
     }
     : {
       workspace: '',
+      workspaceName: '',
       table: '',
       knownFields: [],
       fieldDefinitions: [makeNewField()],
@@ -47,6 +47,16 @@ function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
 
   const [knownWorkspaces, setKnownWorkspaces] = useState<Array<KnownWorkspace>>(knownSpaces);
   const [editingTable, setEditingTable] = useState(false);
+
+  // Add the current field's workspace if it's not known
+  useEffect(() => {
+    if (initial && !knownSpaces.find(space => space.value === initial.workspace)) {
+      setKnownWorkspaces([...knownSpaces, {
+        label: initial.workspaceName || initial.workspace,
+        value: initial.workspace,
+      }]);
+    }
+  }, []);
 
   const { workspace, table, knownFields, fieldDefinitions } = fieldValue;
 
@@ -60,33 +70,50 @@ function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
     setKnownWorkspaces(allSpaces);
   }
 
-
   const handleCreateNewField = () => {
-    change('fieldDefinitions')([
+    handleSetFieldDefinitions([
       ...fieldDefinitions,
       makeNewField(),
     ])
   }
 
+  const handleSetFieldDefinitions = (definitions: Array<FieldDefinition>) => {
+    contentfulSdk.field.setValue({
+      ...fieldValue,
+      fieldDefinitions: definitions,
+    });
+  }
+
+  const handleSetWorkspaceId = (workspaceId: string) => {
+    const workspace = knownSpaces.find((candidate) => candidate.value === workspaceId);
+
+    contentfulSdk.field.setValue({
+      ...fieldValue,
+      workspace: workspaceId,
+      workspaceName: workspace ? workspace.label : workspaceId,
+    });
+  }
+
+  const handleChooseTable = (tableName: string, fields: Array<string>) => {
+    contentfulSdk.field.setValue({
+      ...fieldValue,
+      table: tableName,
+      knownFields: fields,
+    });
+  }
+
   useEffect(() => {
     const unsubscribe = contentfulSdk.field.onValueChanged((value) => {
-      setFieldValue(value);
+      if (value) {
+        setFieldValue(value);
+      }
     });
 
     // clean up the event listener when the component is removed from the DOM
     return () => {
       unsubscribe();
     };
-  })
-
-  const change = (key: string) => (value: any) => {
-    console.log('new val', value);
-
-    contentfulSdk.field.setValue({
-      ...fieldValue,
-      [key]: value,
-    });
-  }
+  }, [])
 
   const hasChosenTable = workspace && table;
 
@@ -105,12 +132,8 @@ function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
     }
 
     return <ChooseTableStep
-      onResolveFields={change('knownFields')}
-      onSetWorkspaceId={change('workspace')}
-      onSetTableName={(tableName) => {
-        change('table')(tableName);
-        setEditingTable(false);
-      }}
+      onSetWorkspaceId={handleSetWorkspaceId}
+      onChooseTable={handleChooseTable}
       onAddKnownWorkspace={handleAddKnownWorkspace}
       knownWorkspaces={knownWorkspaces}
       workspaceId={workspace}
@@ -124,14 +147,13 @@ function App({ contentfulSdk }: { contentfulSdk: FieldExtensionSDK }) {
 
     return <SetFieldsStep
       value={fieldDefinitions}
-      onChange={change('fieldDefinitions')}
+      onChange={handleSetFieldDefinitions}
       onCreateNewField={handleCreateNewField}
       knownFields={knownFields}
       workspaceId={workspace}
       tableName={table}
     />;
   }
-
 
   return (
     <div className="max-w-3xl">

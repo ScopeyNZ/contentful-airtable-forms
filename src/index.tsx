@@ -7,16 +7,15 @@ import {FieldExtensionSDK, init} from 'contentful-ui-extensions-sdk';
 
 init<FieldExtensionSDK>(sdk => {
   sdk.window.startAutoResizer();
+  const initial = sdk.field.getValue();
 
   ReactDOM.render(
     <React.StrictMode>
-      <App contentfulSdk={sdk} />
+      <App contentfulSdk={sdk} initial={initial} />
     </React.StrictMode>,
     document.getElementById('root')
   );
-})
-
-
+});
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

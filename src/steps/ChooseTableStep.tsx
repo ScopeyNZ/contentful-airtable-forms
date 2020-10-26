@@ -5,16 +5,14 @@ import classNames from "classnames";
 import KnownWorkspace from '../types/KnownWorkspace';
 
 export default function ChooseTableStep({
-  onResolveFields,
   onSetWorkspaceId,
-  onSetTableName,
+  onChooseTable,
   workspaceId,
   knownWorkspaces,
   onAddKnownWorkspace,
 }: {
-  onResolveFields: (fields: Array<string>) => void,
   onSetWorkspaceId: (workspaceId: string) => void,
-  onSetTableName: (tableName: string) => void ,
+  onChooseTable: (tableName: string, fields: Array<string>) => void ,
   knownWorkspaces: Array<KnownWorkspace>,
   onAddKnownWorkspace: (newSpace: KnownWorkspace) => void
   workspaceId: string,
@@ -48,8 +46,7 @@ export default function ChooseTableStep({
       return;
     }
     setValidating(false);
-    onSetTableName(candidateTable);
-    onResolveFields(await response.json());
+    onChooseTable(candidateTable, await response.json());
   }
 
   const hint = invalidTable

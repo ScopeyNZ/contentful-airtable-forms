@@ -2,7 +2,6 @@ require('encoding');
 const fetch = require('node-fetch').default
 
 export const resolveFields = async (workspace: string, table: string): Promise<Array<string>> => {
-  console.log(process.env.AIRTABLE_KEY);
   return fetch(
     `https://api.airtable.com/v0/${workspace}/${encodeURIComponent(table)}?maxRecords=20`,
     { headers: {

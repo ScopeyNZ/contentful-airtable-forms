@@ -27,6 +27,7 @@ export default function FieldDefinitionBuilder({
   });
   const fieldTypes = [
     { label: 'Text field', value: 'text' },
+    { label: 'Text area', value: 'textarea' },
     { label: 'Dropdown', value: 'select' },
     { label: 'Checkbox', value: 'checkbox' },
     { label: 'Email', value: 'email' },
