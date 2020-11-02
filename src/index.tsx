@@ -4,6 +4,7 @@ import './index.scss';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import {FieldExtensionSDK, init} from 'contentful-ui-extensions-sdk';
+import '@contentful/forma-36-react-components/dist/styles.css';
 
 init<FieldExtensionSDK>(sdk => {
   sdk.window.startAutoResizer();

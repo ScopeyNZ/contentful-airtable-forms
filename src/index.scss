@@ -16,6 +16,11 @@ code {
     monospace;
 }
 
+// Contentful's UI lib is crazy where it makes some titles in the middle of the page H1's...
+h1 {
+  @apply font-bold;
+}
+
 @import '~contentful-ui-extensions-sdk/dist/cf-extension.css';
 
 @tailwind utilities;

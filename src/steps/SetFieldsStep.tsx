@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import FieldDefinition from '../types/FieldDefinition';
 import FieldDefinitionSummary from '../components/FieldDefinitionSummary';
 import {DragDropContext, DragUpdate, Droppable} from 'react-beautiful-dnd';
+import {EntityList} from "@contentful/forma-36-react-components";
 
 
 export default function SetFieldsStep({ knownFields, tableName, workspaceId, value, onChange, onCreateNewField }: {
@@ -54,23 +55,25 @@ export default function SetFieldsStep({ knownFields, tableName, workspaceId, val
               ref={provided.innerRef}
               className="cursor-grab"
             >
-              { value.map((definition, index) => (
-                <FieldDefinitionSummary
-                  key={definition.id}
-                  index={index}
-                  fieldDefinition={definition}
-                  onAddPossibleField={handleAddPossibleField}
-                  onChange={handleChangeFieldDefinition(index)}
-                  onRemove={handleRemoveFieldDefinition(index)}
-                  possibleFields={possibleFields}
-                  tableName={tableName}
-                  workspaceId={workspaceId}
-                  startInEdit={
-                    index === value.length - 1 && (!definition.airtableField || !definition.label.length)
-                  }
-                />
-              )) }
-              { provided.placeholder }
+              <EntityList>
+                { value.map((definition, index) => (
+                  <FieldDefinitionSummary
+                    key={definition.id}
+                    index={index}
+                    fieldDefinition={definition}
+                    onAddPossibleField={handleAddPossibleField}
+                    onChange={handleChangeFieldDefinition(index)}
+                    onRemove={handleRemoveFieldDefinition(index)}
+                    possibleFields={possibleFields}
+                    tableName={tableName}
+                    workspaceId={workspaceId}
+                    startInEdit={
+                      index === value.length - 1 && (!definition.airtableField || !definition.label.length)
+                    }
+                  />
+                )) }
+                { provided.placeholder }
+              </EntityList>
             </div>
           ) }
         </Droppable>

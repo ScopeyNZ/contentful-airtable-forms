@@ -56,7 +56,7 @@ export const validateField = async (
   ).then((response: any) => {
     if (response.status === 200) {
       // Dispatch a request to delete the record we just added, but don't wait for it.
-      response.json().then((records: Array<any>) => fetch(
+      response.json().then(({ records }: { records: Array<any>}) => fetch(
         `https://api.airtable.com/v0/${workspace}/${encodeURIComponent(table)}?records=${records[0].id}`,
         {
           method: 'DELETE',

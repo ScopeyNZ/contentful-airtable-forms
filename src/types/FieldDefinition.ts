@@ -5,4 +5,6 @@ export default interface FieldDefinition {
   label: string,
   airtableField: string|undefined,
   type: FieldDefinitionType,
+  required: boolean,
+  options: Array<string>|undefined,
 }

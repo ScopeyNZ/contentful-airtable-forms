@@ -7,7 +7,7 @@ export default function ChosenTableSummary({ workspace, tableName, onClickChange
   onClickChange: () => void,
 }) {
   return (
-    <div className="bg-gray-100 p-2 pl-4 font-semibold flex justify-between items-center">
+    <div className="bg-gray-100 p-2 pl-4 font-semibold flex justify-between items-center mb-2">
       <span>
         Submissions will be saved to { workspace.label.length ? workspace.label : (
           <abbr title="This is an unlabelled workspace">[{ workspace.value }]</abbr>

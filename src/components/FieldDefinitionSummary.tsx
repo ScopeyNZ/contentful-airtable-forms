@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import FieldDefinition from '../types/FieldDefinition';
 import FieldDefinitionBuilder from './FieldDefinitionBuilder';
 import {Draggable} from 'react-beautiful-dnd';
+import {DropdownList, DropdownListItem, EntityListItem} from "@contentful/forma-36-react-components";
 
 export default function FieldDefinitionSummary({
   index,
@@ -36,21 +37,22 @@ export default function FieldDefinitionSummary({
   }
 
   const renderSummary = () => (
-    <div className="flex">
-      <div className="flex-grow">
-        <p className="cf-text-dimmed mb-2">
-          { fieldDefinition.airtableField } ({ fieldDefinition.type })
-        </p>
-        <p className="text-lg font-bold">{ fieldDefinition.label }</p>
-      </div>
-      <button
-        type="button"
-        className="cf-btn-secondary"
-        onClick={() => setIsEditing(true)}
-      >
-        Edit
-      </button>
-    </div>
+    <EntityListItem
+      title={fieldDefinition.label}
+      contentType={fieldDefinition.type}
+      description={`${fieldDefinition.required ? 'Required - ' : ''}Saves into: ${fieldDefinition.airtableField}`}
+      withDragHandle={true}
+      withThumbnail={false}
+      onClick={() => setIsEditing(true)}
+      dropdownListElements={
+        <DropdownList>
+          <DropdownListItem isTitle>Actions</DropdownListItem>
+          <DropdownListItem onClick={onRemove}>
+            Remove
+          </DropdownListItem>
+        </DropdownList>
+      }
+    />
   );
 
   const renderBuilder = function () {
@@ -72,7 +74,6 @@ export default function FieldDefinitionSummary({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className="shadow border border-cf-element transition hover:border-blue-light p-2 mt-2"
         >
           { isEditing ? renderBuilder() : renderSummary() }
         </div>

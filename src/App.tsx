@@ -23,6 +23,8 @@ function App({ contentfulSdk, initial }: { contentfulSdk: FieldExtensionSDK, ini
     label: '',
     airtableField: undefined,
     type: 'text',
+    required: false,
+    options: undefined,
   });
 
   // Check local storage for previous workspaces

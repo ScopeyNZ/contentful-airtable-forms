@@ -37,9 +37,9 @@ export default function FieldSelector({
     }`;
 
     const response = await fetch(`/.netlify/functions/airtable/validate-field?${params}`)
+    setValidatingManualField(false);
 
     if (response.status === 200) {
-      setValidatingManualField(false);
       setEnteringManualField(false);
       setNewField('');
       onAddPossibleField(newField);
@@ -48,7 +48,6 @@ export default function FieldSelector({
     }
 
     setInvalid(true);
-    setValidatingManualField(true);
   }
 
   let hint = 'Choose (or enter) the column name that this field should write into';
@@ -61,7 +60,7 @@ export default function FieldSelector({
   }
 
   return (
-    <div className="cf-form-field mb-0">
+    <div className="cf-form-field">
       <label htmlFor={id}>Airtable field</label>
       <div className="flex space-x-2">
         { enteringManualField || (
